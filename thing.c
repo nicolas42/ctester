@@ -78,11 +78,18 @@ int main(int argc, char** argv){
 	}
 
 
-	printf("\nAllocate Static and Dynamic Things\n");
+	printf("\nAllocate Static Things\n");
 	Thing sthings[THINGS_LENGTH];
 	for (int i=0; i<THINGS_LENGTH; ++i)
 		thing_make(&sthings[i], rand(), rand());
 
+	printf("\nPrint Static Things\n");
+	printf("length: %d\n", THINGS_LENGTH);
+	for (int i=0; i<THINGS_LENGTH; ++i)
+		thing_print(sthings[i]);
+	
+	
+	printf("\nAllocate Dynamic Things\n");
 	Things dthings;
 	things_init(&dthings);
 	for (int i=0; i<THINGS_LENGTH; ++i)
@@ -93,20 +100,11 @@ int main(int argc, char** argv){
 	dthings.things[1] = dthings.things[0];
 
 
-
-
-	printf("\nPrint Static Things\n");
-	printf("length: %d\n", THINGS_LENGTH);
-	for (int i=0; i<THINGS_LENGTH; ++i)
-		thing_print(sthings[i]);
-	
 	printf("\nPrint Dynamic Things\n");
 	printf("length: %d\n", dthings.length);
 	things_print(dthings);
 
-
-
-	printf("\nFree Stuff\n");
+	printf("\nFree Dynamic Things\n");
 	free(dthings.things);
 	
 
