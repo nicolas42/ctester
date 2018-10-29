@@ -87,17 +87,21 @@ int main(int argc, char** argv){
 	things_init(&dthings);
 	for (int i=0; i<THINGS_LENGTH; ++i)
 		things_append(&dthings, sthings[i]);
+
+	printf("\nIn dynamic things - Remove 3 and move 0 to 1\n");
 	things_remove(&dthings, 3);
+	dthings.things[1] = dthings.things[0];
 
 
 
 
-
-	printf("\nStatic Things\n");
+	printf("\nPrint Static Things\n");
+	printf("length: %d\n", THINGS_LENGTH);
 	for (int i=0; i<THINGS_LENGTH; ++i)
 		thing_print(sthings[i]);
 	
-	printf("\nDynamic Things\n");
+	printf("\nPrint Dynamic Things\n");
+	printf("length: %d\n", dthings.length);
 	things_print(dthings);
 
 
