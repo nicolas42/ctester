@@ -12,7 +12,7 @@ typedef struct Things {
 	int length;
 	int capacity;
 
-	void (*remove)(struct Things* things, int index);
+//	void (*remove)(struct Things* things, int index);
 } Things;
 
 
@@ -36,7 +36,7 @@ void init(Things* things){
 	things->length = 0;
 	things->capacity = 2;
 	things->values = malloc(things->capacity * sizeof(Thing));
-	things->remove = remove2;
+	// things->remove = remove2;
 }
 
 void append(Things* things, Thing thing){
@@ -88,8 +88,8 @@ int main(int argc, char** argv){
 	}
 
 	
-	things.remove(&things, 3); // remove is already defined in stdio :(
-	things.values[1] = things.values[0];
+	remove2(&things, 3); // remove is already defined in stdio :(
+	// things.values[1] = things.values[0];
 	printall(things);
 	
 

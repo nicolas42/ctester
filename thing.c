@@ -2,12 +2,21 @@
 #include <stdlib.h>
 #include <string.h>
 
+// FUNCTIONS
+// thing make, print, string
+// things init, append, insert, remove, print, string
+
+// size of a thing string
+#define THING_STRING_SIZE 30
+#define THING_FORMAT "{%d,%d}"
+#define THING_SEPARATOR ", "
+
 void usage(){
 	fprintf(stderr, "Usage: thing [numberOfThings]\n");
 	exit(1);
 }
 
-typedef struct Thing {
+typedef struct {
 	int a;
 	int b;
 } Thing;
@@ -17,110 +26,198 @@ void thing_make(Thing* thing, int a, int b) {
 	thing->b = b;
 }
 
-void thing_rand(Thing* thing) {
-	thing->a = rand();
-	thing->b = rand();
+int thing_is_equal(Thing a, Thing b){
+	return a.a == b.a && a.b == b.b;
 }
 
 void thing_print(Thing thing){
-	printf("thing {a: %d b: %d}\n", thing.a, thing.b);
+	printf(THING_FORMAT, thing.a, thing.b);
 }
 
-typedef struct Things {
-	Thing* things;
+typedef struct {
+	Thing* values;
 	int length;
 	int capacity;
+	int index;
 } Things;
 
 void things_init(Things* things){
+	things->index = 0;
 	things->length = 0;
 	things->capacity = 2;
-	things->things = malloc(things->capacity * sizeof(Thing));
+	things->values = malloc(things->capacity * sizeof(Thing));
+}
+
+int things_is_head(Things things){
+	return things.index == 0;
+}
+
+int things_is_tail(Things things){
+	return things.index + 1 == things.length;
+}
+
+void things_next(Things* things){
+	if (!things_is_tail(*things)){
+		things->index++;
+	}
+}
+
+void things_back(Things* things){
+	if (!things_is_head(*things)){
+		things->index--;
+	}
 }
 
 void things_append(Things* things, Thing thing){
 	
 	if (things->length == things->capacity){
 		things->capacity = 2 * things->capacity;
-		things->things = realloc(things->things, things->capacity * sizeof(Thing));
+		things->values = realloc(things->values, things->capacity * sizeof(Thing));
 	}
-	things->things[things->length] = thing;
+	things->values[things->length] = thing;
 	things->length++;
 }
 
 void things_remove(Things* things, int index){
 	
 	for (int i = index; i <= things->length - 2; ++i)
-		things->things[index] = things->things[index + 1];
+		things->values[index] = things->values[index + 1];
 	things->length--;
 }
 
-void things_print(Things things){
-	for (int i=0; i<things.length; ++i)
-		thing_print(things.things[i]);
+void things_insert(Things* things, Thing thing, int index){
+	
+	// append one thing to ensure allocations are done
+	things_append(things, thing);
+	
+	for (int i = index; i <= things->length - 2; ++i)
+		things->values[index + 1] = things->values[index];
+	
+	// Actually set the thing
+	things->values[index] = thing;
+	things->length++;
 }
+
+void things_print(Things things){
+	for (int i=0; i<things.length; i+=1){
+		thing_print(things.values[i]);
+		printf(",");
+	}
+	printf("\n");
+}
+
+int thing_string(char* out, Thing thing){
+	int n = sprintf(out, THING_FORMAT, thing.a, thing.b);	
+	return n;
+}
+
+void things_string(char** buffer, Things things){
+	// assume need THING_STRING_SIZE bytes max for serialized thing
+	*buffer = realloc(*buffer, things.length * THING_STRING_SIZE); 
+	int offset = 0;
+	int n = -1;
+	int m = -1;
+	
+	for (int i=0; i<things.length; i+=1){
+		n = thing_string(*buffer + offset, things.values[i]);
+		offset += n;
+		m = sprintf(*buffer + offset, THING_SEPARATOR);
+		offset += m;
+	}
+}
+
+void things_test_dynamic_usage(char** buffer){
+
+	Things d; // dynamic things
+	things_init(&d); // malloc .values
+
+	for (int i=0; i<5; i+=1){
+		Thing it;
+		thing_make(&it, i, i);
+		things_append(&d, it);
+	}
+
+	things_print(d);
+	d.values[0] = d.values[1];
+	d.values[2] = d.values[1];
+	
+	
+	things_print(d);
+	things_remove(&d, 3);
+	things_print(d);
+	
+	free(d.values);
+}
+
+void things_test_static_usage(void){
+	int i = 0;
+	int N = 5;
+	Thing s[N]; // static things, length of static things
+
+	for (i=0; i<N; ++i)
+		thing_make(&s[i], rand(), rand());
+
+	for (i=0; i<N; ++i){
+		thing_print(s[i]);
+		printf(THING_SEPARATOR);
+	}
+	printf("\n");
+}
+
 
 int main(int argc, char** argv){
 	
-	int THINGS_LENGTH = 0;
+	int N = 0;
 
 	// Argument Validation
 	switch (argc){
-	case 2:
-		THINGS_LENGTH = atoi(argv[1]);
-		break;
-	case 1:
-		THINGS_LENGTH = 5; // default
-		break;
-	default:
-	    	usage();
-		break;
+		case 2:
+			N = atoi(argv[1]);
+			break;
+		case 1:
+			N = 5; // default
+			break;
+		default:
+		    usage();
+			break;
 	}
 
+	char* buffer = malloc(8 * sizeof(char));
 
-	printf("\nAllocate Static Things\n");
-	Thing sthings[THINGS_LENGTH];
-	for (int i=0; i<THINGS_LENGTH; ++i)
-		thing_make(&sthings[i], rand(), rand());
-
-	printf("\nPrint Static Things\n");
-	printf("length: %d\n", THINGS_LENGTH);
-	for (int i=0; i<THINGS_LENGTH; ++i)
-		thing_print(sthings[i]);
+	printf("\nTest Dynamic Usage\n");
+	things_test_dynamic_usage(&buffer);
 	
+	printf("\nTest Static Usage\n");
+	things_test_static_usage();
 	
-	printf("\nAllocate Dynamic Things\n");
-	Things dthings;
-	things_init(&dthings);
-	for (int i=0; i<THINGS_LENGTH; ++i)
-		things_append(&dthings, sthings[i]);
-
-	printf("\nIn dynamic things - Remove 3 and move 0 to 1\n");
-	things_remove(&dthings, 3);
-	dthings.things[1] = dthings.things[0];
-
-
-	printf("\nPrint Dynamic Things\n");
-	printf("length: %d\n", dthings.length);
-	things_print(dthings);
-
-	printf("\nFree Dynamic Things\n");
-	free(dthings.things);
+	free(buffer);
 	
 
 
+	printf("\nTest asprintf\n");
+	char* test = malloc(1);
+	asprintf(&test, "Hello you bastard\n"); // malloc
+	puts(test);
+	free(test);
+	
+	
 	return 0;
 }
 
-
-
-
-
-
-
-
-
 /*
+
+	// Predicted values
+	int pl = 8;
+	int p[pl] = {0,0,0,0,2,2,4,4};
+	
+	for (i = 0; i < pl; i+=2){
+		thing_make(&tmp, p[i], p[i+1]);
+		if (!thing_is_equal(d.values[i/2], tmp)){
+			printf("Failed Test\n");
+		}
+	}
+
+
 	// Test Code	
 	// Assign one struct to another - testing
 	// thing[0] = thing[1];// char strings[2][100] = {"Hello\0", "Goodbye\0"};
@@ -162,9 +259,9 @@ int read_cards_file(Cards* cards, char* filename) {
 
 
 
-char* read_line(FILE* file) {
+int read_line(char* result, FILE* file) {
     int size = INIT_LINE_LENGTH;
-    char* result = malloc(sizeof(char) * size);
+    char* result = realloc(sizeof(char) * size);
     int position = 0;
     int next = 0;
 

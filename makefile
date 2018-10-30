@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -pedantic -Werror -std=gnu99
-LFLAGS = -Wall -pedantic -Werror -std=gnu99
+CFLAGS = -Wall -pedantic -std=gnu99
+LFLAGS = -Wall -pedantic -std=gnu99
 
 all: thing functionPointerTest
 
