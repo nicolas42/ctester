@@ -146,7 +146,7 @@ void string(char** buffer, S s){
 void print(S s){
 	char* str = malloc(8);
 	string(&str, s);
-	printf("%s", str);
+	printf("%s\n", str);
 	free(str);
 }
 
@@ -187,6 +187,31 @@ void pick(V* v, S s, int a){
 	copy(v, s.values[a]);
 }
 
+int square(int a){
+	return a*a;
+}
+
+int is_less_than(V a, V b){
+	return square(a.a)+square(a.b) < square(b.a)+square(b.b);
+}
+
+int is_greater_than(V a, V b){
+	return square(a.a)+square(a.b) > square(b.a)+square(b.b);
+}
+
+// testing only, doesn't work
+void sort(S* s, int a, int b, int len){	
+	for (int i=0; i<len; i++){
+		if (b+i >= s->length){
+			return;
+		}
+		if (is_greater_than(s->values[a+i], s->values[b+i])){
+			swap(s,a+i,b+i);
+		}
+	}
+}
+
+
 void test_dynamic_usage(char** buffer){
 
 	S s; // dynamic series
@@ -195,12 +220,14 @@ void test_dynamic_usage(char** buffer){
 
 	init(&s); // malloc .values
 	
-	for (i=0; i<10; i+=1){
-		make(&v, i, i);
+	srand(198);
+	for (i=10; i>0; i-=1){
+		int n=rand()%100;
+		make(&v, n,n);
 		append(&s, v);
 	}
 	print(s);
-	
+/*	
 	pick(&v,s,1);
 	poke(&s,0,v);
 	poke(&s,2,v);
@@ -216,6 +243,23 @@ void test_dynamic_usage(char** buffer){
 	print(s);
 
 	swap(&s,1,2);
+	print(s);
+*/
+	
+	head(&s);
+	printf("\nSorting\n");
+	print(s);
+	sort(&s,0,1,1);
+	sort(&s,2,3,1);
+	sort(&s,4,5,1);
+	sort(&s,6,7,1);
+	sort(&s,8,9,1);
+	sort(&s,10,11,1);
+	print(s);
+	
+	sort(&s,0,2,2);
+	sort(&s,4,6,2);
+	sort(&s,8,10,2);
 	print(s);
 	
 	free(s.values);
