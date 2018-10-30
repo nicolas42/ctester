@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -pedantic -std=gnu99
 LFLAGS = -Wall -pedantic -std=gnu99
 
-all: thing functionPointerTest
+all: thing series
 
 clean:
 	rm -f *.o
@@ -14,10 +14,10 @@ thing.o: thing.c
 	$(CC) $(LFLAGS) -c thing.c -o thing.o
 
 
-functionPointerTest: functionPointerTest.o
-	$(CC) $(CFLAGS) functionPointerTest.o -o functionPointerTest
+series: series.o
+	$(CC) $(CFLAGS) series.o -o series
 
-functionPointerTest.o: functionPointerTest.c
-	$(CC) $(LFLAGS) -c functionPointerTest.c -o functionPointerTest.o
+series.o: series.c
+	$(CC) $(LFLAGS) -c series.c -o series.o
 
 

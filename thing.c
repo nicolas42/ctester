@@ -6,10 +6,10 @@
 // thing make, print, string
 // things init, append, insert, remove, print, string
 
-// size of a thing string
-#define THING_STRING_SIZE 30
-#define THING_FORMAT "{%d,%d}"
-#define THING_SEPARATOR ", "
+
+#define THING_SIZE 30  // size of a thing string
+#define THING_FORMAT "[%d %d]"
+#define THING_SEPARATOR " "  // for multiple strings
 
 void usage(){
 	fprintf(stderr, "Usage: thing [numberOfThings]\n");
@@ -30,8 +30,15 @@ int thing_is_equal(Thing a, Thing b){
 	return a.a == b.a && a.b == b.b;
 }
 
+int thing_string(char* out, Thing thing){
+	int n = sprintf(out, THING_FORMAT, thing.a, thing.b);	
+	return n;
+}
+
 void thing_print(Thing thing){
-	printf(THING_FORMAT, thing.a, thing.b);
+	char str[THING_SIZE];
+	thing_string(str, thing);
+	printf("%s", str);
 }
 
 typedef struct {
@@ -48,12 +55,20 @@ void things_init(Things* things){
 	things->values = malloc(things->capacity * sizeof(Thing));
 }
 
+void things_head(Things* things){
+	things->index = 0;
+}
+
+void things_tail(Things* things){
+	things->index = things->length;
+}
+
 int things_is_head(Things things){
 	return things.index == 0;
 }
 
 int things_is_tail(Things things){
-	return things.index + 1 == things.length;
+	return things.index == things.length;
 }
 
 void things_next(Things* things){
@@ -98,22 +113,19 @@ void things_insert(Things* things, Thing thing, int index){
 	things->length++;
 }
 
-void things_print(Things things){
-	for (int i=0; i<things.length; i+=1){
-		thing_print(things.values[i]);
-		printf(",");
-	}
-	printf("\n");
-}
+int things_find(Things things, Thing thing){
 
-int thing_string(char* out, Thing thing){
-	int n = sprintf(out, THING_FORMAT, thing.a, thing.b);	
-	return n;
+	for (int i=things.index; i<things.length; i+=1){
+		if (thing_is_equal(things.values[i], thing)){
+			return i;
+		}
+	}
+	return -1;
 }
 
 void things_string(char** buffer, Things things){
-	// assume need THING_STRING_SIZE bytes max for serialized thing
-	*buffer = realloc(*buffer, things.length * THING_STRING_SIZE); 
+	// assume need THING_SIZE bytes max for serialized thing
+	*buffer = realloc(*buffer, things.length * THING_SIZE); 
 	int offset = 0;
 	int n = -1;
 	int m = -1;
@@ -126,27 +138,38 @@ void things_string(char** buffer, Things things){
 	}
 }
 
+void things_print(Things things){
+	char* str = malloc(8);
+	things_string(&str, things);
+	printf("%s", str);
+	free(str);
+}
+
 void things_test_dynamic_usage(char** buffer){
 
-	Things d; // dynamic things
-	things_init(&d); // malloc .values
-
-	for (int i=0; i<5; i+=1){
-		Thing it;
-		thing_make(&it, i, i);
-		things_append(&d, it);
+	Things xs; // dynamic things
+	things_init(&xs); // malloc .values
+	Thing x;
+	int i;
+	
+	for (i=0; i<10; i+=1){
+		thing_make(&x, i, i);
+		things_append(&xs, x);
 	}
 
-	things_print(d);
-	d.values[0] = d.values[1];
-	d.values[2] = d.values[1];
+	things_print(xs);
+	xs.values[0] = xs.values[1];
+	xs.values[2] = xs.values[1];
+	things_print(xs);
+	things_remove(&xs, 3);
+	things_print(xs);
 	
+	printf("\nFind {5,5}\n");
+	thing_make(&x, 5,5);
+	i=things_find(xs, x);
+	thing_print(xs.values[i]);
 	
-	things_print(d);
-	things_remove(&d, 3);
-	things_print(d);
-	
-	free(d.values);
+	free(xs.values);
 }
 
 void things_test_static_usage(void){
